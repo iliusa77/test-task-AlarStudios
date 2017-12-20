@@ -32,7 +32,10 @@ aws_ami: "aws_ami"
 region: "region" #for example us-west-2
 application: "app"
 application2: "web"
-app_hostname: "app-01"
+app01_hostname: "app-01"
+app02_hostname: "app-02"
+app03_hostname: "app-03"
+app04_hostname: "app-04"
 web_hostname: "{{ ansible_hostname }}"
 web_count: 1
 app_count: 1
