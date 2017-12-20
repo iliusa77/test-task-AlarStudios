@@ -5,24 +5,24 @@
 ### Preliminary preparation
 
 #### prepare local environment
-
+```
 virtualenv .venv && source .venv/bin/activate
 pip install -r requirementes.txt
-
+```
 #### make file ~/.boto with AWS credentials:
-
+```
 [profile test]
 aws_access_key_id=key
 aws_secret_access_key=secret
-
+```
 #### make file ~/.aws/credential with AWS credentials:
-
+```
 [default]
 aws_access_key_id=key
 aws_secret_access_key=secret
-
+```
 #### make file inventory/vars/vars_instances.yml with the following vars:
-
+```
 aws_profile: "test"
 aws_key_name: "aws_key_name"
 private_key_file: "/path/to/your_aws_key.pem"
@@ -39,11 +39,12 @@ app_count: 1
 vpc_subnet_a: "subnet-xxxxxxxx"
 vpc_subnet_b: "subnet-xxxxxxxx"
 vpc_subnet_c: "subnet-xxxxxxxx"
-
+```
 
 
 ### Creation
 
 #### Run playbook (in verbose mode):
-
+```
 ansible-playbook -i inventory/ec2.py instances.yml -e @inventory/vars/vars_instances.yml -vvv 
+```
