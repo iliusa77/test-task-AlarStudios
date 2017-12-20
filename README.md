@@ -21,7 +21,7 @@ aws_secret_access_key=secret
 aws_access_key_id=key
 aws_secret_access_key=secret
 ```
-#### make file inventory/vars/vars_instances.yml with the following vars:
+#### fill in the variable file inventory/vars/vars_instances.yml substituting your values:
 ```
 aws_profile: "test"
 aws_key_name: "aws_key_name"
