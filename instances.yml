@@ -1,0 +1,415 @@
+---
+
+- hosts: localhost
+
+  tasks:
+    - name: Get my current IP address
+      uri:
+        url: http://checkip.amazonaws.com/
+        return_content: yes
+      register: my_ip
+
+
+    - name: Create app-01 instance
+      ec2:
+        key_name: "{{ aws_key_name }}"
+        instance_type: "{{ aws_instance_type }}"
+        image: "{{ aws_ami }}" # Ubuntu 14
+        region: "{{ region }}"
+        group_id: "{{ aws_security_group }}"
+        wait: yes
+        monitoring: no
+        vpc_subnet_id: "{{ vpc_subnet_a }}"
+        assign_public_ip: no
+        tenancy: default
+        termination_protection: no      
+        instance_tags:
+          application: "{{ application }}-01"
+          Name: "{{ application }}-01"
+        exact_count: "{{ app_count }}"
+        count_tag:
+          application: "{{ application }}-01"
+          Name: "{{ application }}-01"
+      register: ec2_instance_app_01
+
+    - name: Create app-02 instance
+      ec2:
+        key_name: "{{ aws_key_name }}"
+        instance_type: "{{ aws_instance_type }}"
+        image: "{{ aws_ami }}" # Ubuntu 14
+        region: "{{ region }}"
+        group_id: "{{ aws_security_group }}"
+        wait: yes
+        monitoring: no
+        vpc_subnet_id: "{{ vpc_subnet_a }}"
+        assign_public_ip: no
+        tenancy: default
+        termination_protection: no
+        instance_tags:
+          application: "{{ application }}-02"
+          Name: "{{ application }}-02"
+        exact_count: "{{ app_count }}"
+        count_tag:
+          application: "{{ application }}-02"
+          Name: "{{ application }}-02"
+      register: ec2_instance_app_02
+
+    - name: Create app-03 instance
+      ec2:
+        key_name: "{{ aws_key_name }}"
+        instance_type: "{{ aws_instance_type }}"
+        image: "{{ aws_ami }}" # Ubuntu 14
+        region: "{{ region }}"
+        group_id: "{{ aws_security_group }}"
+        wait: yes
+        monitoring: no
+        vpc_subnet_id: "{{ vpc_subnet_b }}"
+        assign_public_ip: no
+        tenancy: default
+        termination_protection: no
+        instance_tags:
+          application: "{{ application }}-03"
+          Name: "{{ application }}-03"
+        exact_count: "{{ app_count }}"
+        count_tag:
+          application: "{{ application }}-03"
+          Name: "{{ application }}-03"
+      register: ec2_instance_app_03
+
+    - name: Create app-04 instance
+      ec2:
+        key_name: "{{ aws_key_name }}"
+        instance_type: "{{ aws_instance_type }}"
+        image: "{{ aws_ami }}" # Ubuntu 14
+        region: "{{ region }}"
+        group_id: "{{ aws_security_group }}"
+        wait: yes
+        monitoring: no
+        vpc_subnet_id: "{{ vpc_subnet_b }}"
+        assign_public_ip: no
+        tenancy: default
+        termination_protection: no
+        instance_tags:
+          application: "{{ application }}-04"
+          Name: "{{ application }}-04"
+        exact_count: "{{ app_count }}"
+        count_tag:
+          application: "{{ application }}-04"
+          Name: "{{ application }}-04"
+      register: ec2_instance_app_04
+
+    - name: Create web-01 instance
+      ec2:
+        key_name: "{{ aws_key_name }}"
+        instance_type: "{{ aws_instance_type }}"
+        image: "{{ aws_ami }}" # Ubuntu 14
+        region: "{{ region }}"
+        group_id: "{{ aws_security_group }}"
+        wait: yes
+        monitoring: no
+        vpc_subnet_id: "{{ vpc_subnet_a }}"
+        assign_public_ip: yes
+        tenancy: default
+        termination_protection: no      
+        instance_tags:
+          application: "{{ application2 }}-01"
+          Name: "{{ application2 }}-01"
+        exact_count: "{{ web_count }}"
+        count_tag:
+          application: "{{ application2 }}-01"
+          Name: "{{ application2 }}-01"
+      register: ec2_instance_web_01
+
+    - name: Create web-02 instance
+      ec2:
+        key_name: "{{ aws_key_name }}"
+        instance_type: "{{ aws_instance_type }}"
+        image: "{{ aws_ami }}" # Ubuntu 14
+        region: "{{ region }}"
+        group_id: "{{ aws_security_group }}"
+        wait: yes
+        monitoring: no
+        vpc_subnet_id: "{{ vpc_subnet_b }}"
+        assign_public_ip: yes
+        tenancy: default
+        termination_protection: no
+        instance_tags:
+          application: "{{ application2 }}-02"
+          Name: "{{ application2 }}-02"
+        exact_count: "{{ web_count }}"
+        count_tag:
+          application: "{{ application2 }}-02"
+          Name: "{{ application2 }}-02"
+      register: ec2_instance_web_02
+
+
+    - name: Store app-01 instance IPs to provision against
+      add_host:
+        hostname: "{{ item.public_ip }}"
+        groupname: ec2_instance_app_01_ip
+      with_items: "{{ ec2_instance_app_01.tagged_instances }}"
+
+    - name: Store app-02 instance IPs to provision against
+      add_host:
+        hostname: "{{ item.public_ip }}"
+        groupname: ec2_instance_app_02_ip
+      with_items: "{{ ec2_instance_app_02.tagged_instances }}"
+
+    - name: Store app-03 instance IPs to provision against
+      add_host:
+        hostname: "{{ item.public_ip }}"
+        groupname: ec2_instance_app_03_ip
+      with_items: "{{ ec2_instance_app_03.tagged_instances }}"
+
+    - name: Store app-04 instance IPs to provision against
+      add_host:
+        hostname: "{{ item.public_ip }}"
+        groupname: ec2_instance_app_04_ip
+      with_items: "{{ ec2_instance_app_04.tagged_instances }}"
+
+    - name: Store web-01 instance IPs to provision against
+      add_host:
+        hostname: "{{ item.public_ip }}"
+        groupname: ec2_instance_web_01_ip
+      with_items: "{{ ec2_instance_web_01.tagged_instances }}"
+
+    - name: Store web-02 instance IPs to provision against
+      add_host:
+        hostname: "{{ item.public_ip }}"
+        groupname: ec2_instance_web_02_ip
+      with_items: "{{ ec2_instance_web_02.tagged_instances }}"
+
+    - name: Wait for app-01 to come online
+      wait_for:
+        host: "{{ item.public_ip }}"
+        port: 22
+        timeout: 300
+      with_items: "{{ ec2_instance_app_01.tagged_instances }}"
+
+    - name: Wait for app-02 to come online
+      wait_for:
+        host: "{{ item.public_ip }}"
+        port: 22
+        timeout: 300
+      with_items: "{{ ec2_instance_app_02.tagged_instances }}"
+
+    - name: Wait for app-03 to come online
+      wait_for:
+        host: "{{ item.public_ip }}"
+        port: 22
+        timeout: 300
+      with_items: "{{ ec2_instance_app_03.tagged_instances }}"
+
+    - name: Wait for app-04 to come online
+      wait_for:
+        host: "{{ item.public_ip }}"
+        port: 22
+        timeout: 300
+      with_items: "{{ ec2_instance_app_04.tagged_instances }}"
+
+    - name: Wait for web-01 to come online
+      wait_for:
+        host: "{{ item.public_ip }}"
+        port: 22
+        timeout: 300
+      with_items: "{{ ec2_instance_web_01.tagged_instances }}"
+
+    - name: Wait for web-02 to come online
+      wait_for:
+        host: "{{ item.public_ip }}"
+        port: 22
+        timeout: 300
+      with_items: "{{ ec2_instance_web_02.tagged_instances }}"
+
+    - name: Add instance app-01 as known hosts
+      known_hosts:
+        name: "{{ item.public_ip }}"
+        key: "{{ lookup('pipe', 'ssh-keyscan -t rsa ' + item.public_ip) }}"
+      with_items: "{{ ec2_instance_app_01.tagged_instances }}"
+
+    - name: Add instance app-02 as known hosts
+      known_hosts:
+        name: "{{ item.public_ip }}"
+        key: "{{ lookup('pipe', 'ssh-keyscan -t rsa ' + item.public_ip) }}"
+      with_items: "{{ ec2_instance_app_02.tagged_instances }}"
+
+    - name: Add instance app-03 as known hosts
+      known_hosts:
+        name: "{{ item.public_ip }}"
+        key: "{{ lookup('pipe', 'ssh-keyscan -t rsa ' + item.public_ip) }}"
+      with_items: "{{ ec2_instance_app_03.tagged_instances }}"
+
+    - name: Add instance app-04 as known hosts
+      known_hosts:
+        name: "{{ item.public_ip }}"
+        key: "{{ lookup('pipe', 'ssh-keyscan -t rsa ' + item.public_ip) }}"
+      with_items: "{{ ec2_instance_app_04.tagged_instances }}"
+
+    - name: Add instance web-01 as known hosts
+      known_hosts:
+        name: "{{ item.public_ip }}"
+        key: "{{ lookup('pipe', 'ssh-keyscan -t rsa ' + item.public_ip) }}"
+      with_items: "{{ ec2_instance_web_01.tagged_instances }}"
+
+    - name: Add instance web-02 as known hosts
+      known_hosts:
+        name: "{{ item.public_ip }}"
+        key: "{{ lookup('pipe', 'ssh-keyscan -t rsa ' + item.public_ip) }}"
+      with_items: "{{ ec2_instance_web_02.tagged_instances }}"
+
+
+- hosts: ec2_instance_app_01_ip
+  remote_user: ubuntu
+  become: True
+  tasks:
+    - name: Change hostname on app-01
+      hostname:
+        name: app-01
+
+    - name: Install nginx on app-01
+      apt:
+        name: nginx
+        state: present
+
+    - name: Create default index page
+      copy:
+        dest: /usr/share/nginx/html/index.html
+        content: "App nginx, the hostname of instance is {{ ansible_hostname }}"
+
+    - name: Restart nginx
+      service:
+        name: nginx
+        state: restarted
+
+- hosts: ec2_instance_app_02_ip
+  remote_user: ubuntu
+  become: True
+  tasks:
+    - name: Change hostname on app-02
+      hostname:
+        name: app-02
+
+    - name: Install nginx on app-02
+      apt:
+        name: nginx
+        state: present
+
+    - name: Create default index page
+      copy:
+        dest: /usr/share/nginx/html/index.html
+        content: "App nginx, the hostname of instance is {{ ansible_hostname }}"
+
+    - name: Restart nginx
+      service:
+        name: nginx
+        state: restarted
+
+- hosts: ec2_instance_app_03_ip
+  remote_user: ubuntu
+  become: True
+  tasks:
+    - name: Change hostname on app-03
+      hostname:
+        name: app-03
+
+    - name: Install nginx on app-03
+      apt:
+        name: nginx
+        state: present
+
+    - name: Create default index page
+      copy:
+        dest: /usr/share/nginx/html/index.html
+        content: "App nginx, the hostname of instance is {{ ansible_hostname }}"
+
+    - name: Restart nginx
+      service:
+        name: nginx
+        state: restarted
+
+- hosts: ec2_instance_app_04_ip
+  remote_user: ubuntu
+  become: True
+  tasks:
+    - name: Change hostname on app-04
+      hostname:
+        name: app-04
+
+    - name: Install nginx on app-04
+      apt:
+        name: nginx
+        state: present
+
+    - name: Create default index page
+      copy:
+        dest: /usr/share/nginx/html/index.html
+        content: "App nginx, the hostname of instance is {{ ansible_hostname }}"
+
+    - name: Restart nginx
+      service:
+        name: nginx
+        state: restarted
+
+- hosts: ec2_instance_web_01_ip
+  remote_user: ubuntu
+  become: True
+  tasks:
+    - name: Change hostname on web-01
+      hostname:
+        name: web-01
+
+    - name: Update host file on web-01
+      template:
+        src=templates/hosts.j2
+        dest=/etc/hosts
+
+    - name: Install nginx on web-01
+      apt:
+        name: nginx
+        state: present
+    - name: Create default index page
+      copy:
+        dest: /usr/share/nginx/html/index.html
+        content: "Web nginx, the hostname of instance is {{ ansible_hostname }}"
+    - name: Restart nginx
+      service:
+        name: nginx
+        state: restarted
+
+- hosts: ec2_instance_web_01_ip
+  remote_user: ubuntu
+  become: True
+  roles:
+    - nginx-load-balancer
+
+- hosts: ec2_instance_web_02_ip
+  remote_user: ubuntu
+  become: True
+  tasks:
+    - name: Change hostname on web-02
+      hostname:
+        name: web-02
+
+    - name: Update host file on web-02
+      template:
+        src=templates/hosts.j2
+        dest=/etc/hosts
+
+    - name: Install nginx on web-02
+      apt:
+        name: nginx
+        state: present
+    - name: Create default index page
+      copy:
+        dest: /usr/share/nginx/html/index.html
+        content: "Web nginx, the hostname of instance is {{ ansible_hostname }}"
+    - name: Restart nginx
+      service:
+        name: nginx
+        state: restarted
+
+- hosts: ec2_instance_web_02_ip
+  remote_user: ubuntu
+  become: True
+  roles:
+    - nginx-load-balancer2

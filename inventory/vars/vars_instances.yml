@@ -1,0 +1,20 @@
+---
+aws_profile: "test"
+aws_key_name: "aws_key_name"
+private_key_file: "/path/to/your_aws_key.pem"
+aws_security_group: "aws_security_group"
+aws_instance_type: "aws_instance_type" #for free t.micro
+aws_ami: "aws_ami"
+region: "region" #for example us-west-2
+application: "app"
+application2: "web"
+app01_hostname: "app-01"
+app02_hostname: "app-02"
+app03_hostname: "app-03"
+app04_hostname: "app-04"
+web_hostname: "{{ ansible_hostname }}"
+web_count: 1
+app_count: 1
+vpc_subnet_a: "subnet-xxxxxxxx"
+vpc_subnet_b: "subnet-xxxxxxxx"
+vpc_subnet_c: "subnet-xxxxxxxx"
